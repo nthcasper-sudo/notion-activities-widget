@@ -10,11 +10,18 @@ const listEl = document.getElementById("activity-list");
 const formEl = document.getElementById("add-form");
 const inputEl = document.getElementById("activity-input");
 
+let isLoading = false;
+
 async function loadActivities() {
+  if (isLoading) return;
+  isLoading = true;
+
   const { data, error } = await supabase
     .from("activities")
     .select("*")
     .order("created_at", { ascending: false });
+
+  isLoading = false;
 
   if (error) {
     console.error("Error loading activities", error);
@@ -63,22 +70,15 @@ function renderActivities(activities) {
 }
 
 async function addActivity(text) {
-  const { data, error } = await supabase
-    .from("activities")
-    .insert({ text })
-    .select()
-    .single();
+  const { error } = await supabase.from("activities").insert({ text });
 
   if (error) {
     console.error("Error adding activity", error);
     return;
   }
 
-  // Optimistic update: prepend new item
-  const current = Array.from(listEl.children)
-    .map((li) => li.__data)
-    .filter(Boolean);
-  renderActivities([data, ...current]);
+  // Reload full list so both sides stay in sync
+  await loadActivities();
 }
 
 async function toggleDone(id, done) {
@@ -89,18 +89,10 @@ async function toggleDone(id, done) {
 
   if (error) {
     console.error("Error updating activity", error);
-    // You could reload to stay in sync
-    loadActivities();
-  } else {
-    // Update UI class without full reload
-    const li = listEl.querySelector(`li[data-id="${id}"]`);
-    if (li) {
-      const text = li.querySelector(".activity-text");
-      if (text) {
-        text.classList.toggle("done", done);
-      }
-    }
   }
+
+  // Reload to stay synced with any other changes
+  await loadActivities();
 }
 
 async function deleteActivity(id) {
@@ -111,10 +103,8 @@ async function deleteActivity(id) {
     return;
   }
 
-  const li = listEl.querySelector(`li[data-id="${id}"]`);
-  if (li) {
-    li.remove();
-  }
+  // Reload list after delete
+  await loadActivities();
 }
 
 formEl.addEventListener("submit", async (e) => {
@@ -122,15 +112,19 @@ formEl.addEventListener("submit", async (e) => {
   const text = inputEl.value.trim();
   if (!text) return;
 
-  formEl.querySelector("button").disabled = true;
+  const button = formEl.querySelector("button");
+  button.disabled = true;
 
   try {
     await addActivity(text);
     inputEl.value = "";
   } finally {
-    formEl.querySelector("button").disabled = false;
+    button.disabled = false;
   }
 });
 
 // Initial load
 loadActivities();
+
+// Auto-refresh every 5 seconds
+setInterval(loadActivities, 1000);
