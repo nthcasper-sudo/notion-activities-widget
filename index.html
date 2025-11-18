@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Shared Activities</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <h1>Activities</h1>
+
+      <form id="add-form">
+        <input
+          id="activity-input"
+          type="text"
+          placeholder="Add something to do..."
+          autocomplete="off"
+          required
+        />
+        <button type="submit">Add</button>
+      </form>
+
+      <ul id="activity-list"></ul>
+    </div>
+
+    <script type="module" src="./script.js"></script>
+  </body>
+</html>
