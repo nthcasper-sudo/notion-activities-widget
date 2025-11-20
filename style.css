@@ -62,9 +62,11 @@ body {
    ======================================== */
 h1 {
   font-size: clamp(16px, 3vw, var(--font-size-title));
-  margin: 0 0 var(--space-3);
+  margin: 0 auto;
+  padding: 0 0 var(--space-3);
   text-align: center;
   width: fit-content;
+  white-space: nowrap;
 }
 
 /* ========================================
