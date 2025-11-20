@@ -123,8 +123,8 @@ formEl.addEventListener("submit", async (e) => {
   }
 });
 
-// Initial load
+// initial load
 loadActivities();
 
-// Auto-refresh every 5 seconds
+// auto-refresh every second
 setInterval(loadActivities, 1000);
