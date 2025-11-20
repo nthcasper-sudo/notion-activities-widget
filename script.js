@@ -9,6 +9,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const listEl = document.getElementById("activity-list");
 const formEl = document.getElementById("add-form");
 const inputEl = document.getElementById("activity-input");
+const appEl = document.querySelector(".app");
+const addButtonEl = formEl.querySelector('button[type="submit"]');
 
 let isLoading = false;
 
@@ -107,6 +109,30 @@ async function deleteActivity(id) {
   await loadActivities();
 }
 
+// tiny heart animation when you add an activity
+function spawnHeart() {
+  if (!appEl || !addButtonEl) return;
+
+  const heart = document.createElement("span");
+  heart.className = "heart-pop";
+  heart.textContent = "❤";
+
+  const buttonRect = addButtonEl.getBoundingClientRect();
+  const appRect = appEl.getBoundingClientRect();
+
+  const x = buttonRect.left + buttonRect.width / 2 - appRect.left;
+  const y = buttonRect.top - appRect.top;
+
+  heart.style.left = `${x}px`;
+  heart.style.top = `${y}px`;
+
+  appEl.appendChild(heart);
+
+  heart.addEventListener("animationend", () => {
+    heart.remove();
+  });
+}
+
 formEl.addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = inputEl.value.trim();
@@ -118,6 +144,7 @@ formEl.addEventListener("submit", async (e) => {
   try {
     await addActivity(text);
     inputEl.value = "";
+    spawnHeart();
   } finally {
     button.disabled = false;
   }
@@ -126,5 +153,5 @@ formEl.addEventListener("submit", async (e) => {
 // initial load
 loadActivities();
 
-// auto-refresh every second
+// auto refresh every second
 setInterval(loadActivities, 1000);
