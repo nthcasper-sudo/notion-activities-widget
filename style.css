@@ -55,6 +55,7 @@ body {
   border-radius: var(--radius-md);
   padding: var(--space-4);
   box-shadow: var(--shadow-card);
+  position: relative;
 }
 
 /* ========================================
@@ -80,7 +81,7 @@ form {
 }
 
 input[type="checkbox"] {
-  accent-color: #f7b6d8; /* light pink */
+  accent-color: var(--color-bg-pink);
 }
 
 input[type="text"] {
