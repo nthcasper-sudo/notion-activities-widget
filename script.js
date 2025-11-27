@@ -37,34 +37,31 @@ async function loadActivities() {
 function renderActivities(activities) {
   listEl.innerHTML = "";
 
-  activities.forEach((item) => {
+  const total = activities.length;
+
+  activities.forEach((item, index) => {
     const li = document.createElement("li");
     li.dataset.id = item.id;
 
-    const main = document.createElement("div");
-    main.className = "activity-main";
+    // Numbering (07., 06., 05., etc)
+    const number = document.createElement("span");
+    number.className = "activity-number";
+    const displayNumber = total - index;
+    number.textContent = displayNumber.toString().padStart(2, "0") + ".";
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = item.done;
-
+    // Activity text only
     const text = document.createElement("span");
-    text.className = "activity-text" + (item.done ? " done" : "");
+    text.className = "activity-text";
     text.textContent = item.text;
 
-    checkbox.addEventListener("change", () =>
-      toggleDone(item.id, checkbox.checked)
-    );
-
-    main.appendChild(checkbox);
-    main.appendChild(text);
-
+    // Delete button
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
     deleteBtn.textContent = "Delete";
     deleteBtn.addEventListener("click", () => deleteActivity(item.id));
 
-    li.appendChild(main);
+    li.appendChild(number);
+    li.appendChild(text);
     li.appendChild(deleteBtn);
 
     listEl.appendChild(li);
