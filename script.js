@@ -152,3 +152,40 @@ loadActivities();
 
 // auto refresh every second
 setInterval(loadActivities, 1000);
+
+// custom cursor
+const cursor = document.getElementById("cursor");
+
+// follow mouse
+window.addEventListener("mousemove", (e) => {
+  cursor.style.top = e.clientY + "px";
+  cursor.style.left = e.clientX + "px";
+});
+
+// hover ONLY on .activity-text
+listEl.addEventListener("mouseover", (e) => {
+  const textEl = e.target.closest(".activity-text");
+  if (textEl) {
+    cursor.classList.add("cursor-copy");
+    cursor.textContent = "COPY";
+  }
+});
+
+listEl.addEventListener("mouseout", (e) => {
+  const textEl = e.target.closest(".activity-text");
+  if (textEl) {
+    cursor.classList.remove("cursor-copy");
+    cursor.textContent = "";
+  }
+});
+
+// click anywhere in li copies ONLY the text
+listEl.addEventListener("click", (e) => {
+  const li = e.target.closest("li");
+  if (!li) return;
+
+  const text = li.querySelector(".activity-text")?.textContent.trim();
+  if (!text) return;
+
+  navigator.clipboard.writeText(text);
+});
