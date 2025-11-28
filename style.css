@@ -1,3 +1,20 @@
+@font-face {
+  font-family: "Puffin Display Soft";
+  src: url("./fonts/fonnts.com-Puffin_Display_Soft_Blk.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* optional: regular weight if you ever use it */
+@font-face {
+  font-family: "Puffin Display Soft";
+  src: url("./fonts/fonnts.com-Puffin_Display_Soft.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ========================================
    DESIGN SYSTEM VARIABLES
    ======================================== */
