@@ -11,8 +11,31 @@ const formEl = document.getElementById("add-form");
 const inputEl = document.getElementById("activity-input");
 const appEl = document.querySelector(".app");
 const addButtonEl = formEl.querySelector('button[type="submit"]');
+const cursor = document.getElementById("cursor");
 
 let isLoading = false;
+
+// emails loaded from Supabase settings table
+let personAEmail = null;
+let personBEmail = null;
+
+async function loadSettings() {
+  const { data, error } = await supabase
+    .from("settings")
+    .select("person_a_email, person_b_email")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error loading settings", error);
+    return;
+  }
+
+  console.log("Loaded settings:", data);
+
+  personAEmail = data?.person_a_email || null;
+  personBEmail = data?.person_b_email || null;
+}
 
 async function loadActivities() {
   if (isLoading) return;
@@ -58,7 +81,10 @@ function renderActivities(activities) {
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
     deleteBtn.textContent = "Delete";
-    deleteBtn.addEventListener("click", () => deleteActivity(item.id));
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation(); // don't trigger calendar when deleting
+      deleteActivity(item.id);
+    });
 
     li.appendChild(number);
     li.appendChild(text);
@@ -147,17 +173,37 @@ formEl.addEventListener("submit", async (e) => {
   }
 });
 
-// initial load
-loadActivities();
+// open google calendar helper
+function openCalendarWithTitle(title) {
+  if (!title) return;
 
-// auto refresh every second
-setInterval(loadActivities, 1000);
+  const base = "https://calendar.google.com/calendar/render?action=TEMPLATE";
+  const textParam = `&text=${encodeURIComponent(title)}`;
 
-// custom cursor
-const cursor = document.getElementById("cursor");
+  let url = base + textParam;
 
-// follow mouse
+  // if settings loaded correctly, add both as guests
+  if (personAEmail && personBEmail) {
+    // format: &add=email1,email2
+    const guestsParam = `&add=${encodeURIComponent(
+      `${personAEmail},${personBEmail}`
+    )}`;
+    url += guestsParam;
+
+    console.log("Calendar URL:", url);
+  } else {
+    console.warn("Guests not set, opening calendar without guests", {
+      personAEmail,
+      personBEmail,
+    });
+  }
+
+  window.open(url, "_blank");
+}
+
+// custom cursor follow
 window.addEventListener("mousemove", (e) => {
+  if (!cursor) return;
   cursor.style.top = e.clientY + "px";
   cursor.style.left = e.clientX + "px";
 });
@@ -165,21 +211,21 @@ window.addEventListener("mousemove", (e) => {
 // hover ONLY on .activity-text
 listEl.addEventListener("mouseover", (e) => {
   const textEl = e.target.closest(".activity-text");
-  if (textEl) {
+  if (textEl && cursor) {
     cursor.classList.add("cursor-copy");
-    cursor.textContent = "COPY";
+    cursor.textContent = "CAL";
   }
 });
 
 listEl.addEventListener("mouseout", (e) => {
   const textEl = e.target.closest(".activity-text");
-  if (textEl) {
+  if (textEl && cursor) {
     cursor.classList.remove("cursor-copy");
     cursor.textContent = "";
   }
 });
 
-// click anywhere in li copies ONLY the text
+// click anywhere in li opens Google Calendar
 listEl.addEventListener("click", (e) => {
   const li = e.target.closest("li");
   if (!li) return;
@@ -187,5 +233,12 @@ listEl.addEventListener("click", (e) => {
   const text = li.querySelector(".activity-text")?.textContent.trim();
   if (!text) return;
 
-  navigator.clipboard.writeText(text);
+  openCalendarWithTitle(text);
 });
+
+// initial loads
+loadSettings();
+loadActivities();
+
+// auto refresh every second
+setInterval(loadActivities, 1000);
